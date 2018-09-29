@@ -1,0 +1,331 @@
+var sheet = SpreadsheetApp.getActiveSpreadsheet();
+var data = sheet.getDataRange().getValues();
+var doc;
+var body;
+
+
+//Style Stuff
+var space = " ";
+var lineBreak = "\n";
+
+//Document Info
+var docTitle = sheet.getRange("B1").getValue();
+var docType = sheet.getRange("C1").getValue();
+
+var doc;
+var docID = sheet.getRange("B2").getValue();
+var body;
+var lists;
+
+//Template Information
+var templateInfoLocations = new Array("B1", "C1");
+var templateSheet = sheet.getSheets()[0];
+
+var templateTitle = templateSheet.getRange(templateInfoLocations[0]).getValue();
+var templateType = templateSheet.getRange(templateInfoLocations[1]).getValue();
+
+var templateName = templateType + " - " + templateTitle;
+
+var fgTag = "/&tag=fitgo-20";
+
+//Data Lists & Ranges
+
+var mainAreaStart = 4;
+
+var mainAreaList = new Array();
+var documentList = new Array();
+
+var productListRange = new Array("A4","C");
+var productList = new Array();
+
+var keywordsLink;
+
+// Symbol Checkers
+
+var listItemChecker = new Array(/^@{1}\s/, /^@{2}\s/, /^@{3}\s/, /^@{4}\s/, /^@{5}\s/, /^@{6}\s/); //Headers from 1-6
+var headerChecker = new Array(/^\${1}\s/, /^\${2}\s/, /^\${3}\s/, /^\${4}\s/, /^\${5}\s/, /^\${6}\s/); //List items from 1-6
+var urlChecker = /w{3}|http/; //Searches for either www or http
+var commentChecker = /\/{2}\s/;
+
+
+var docTitlePlaceholder = /![xX]!/; //X with any lower or upper caps
+var productMatrixPlaceholder = /![pP][rR][oO][dD][uU][cC][tT][mM][aA][tT][rR][iI][xX]!/; //ProductMatrix with any lower or upper caps
+var productListPlaceholder = /![pP][rR][oO][dD][uU][cC][tT][lL][iI][sS][tT]!/; //ProductMatrix with any lower or upper caps
+
+
+//Retrive existing document information
+
+if(docID != "") {
+  doc = DocumentApp.openById(docID);
+  body = doc.getBody();
+
+}
+
+
+//Interface methods
+function createInterface() {
+  var ui = SpreadsheetApp.getUi();
+  // Or DocumentApp or FormApp.
+  ui.createMenu('Document')
+      .addItem('New', 'createNew')
+      .addItem('Update', 'updateDocument')
+      .addSeparator()
+      .addItem('Delete', 'removeDocument')
+      .addSeparator()
+      .addItem('Tags & Symbols', 'openSymbols')
+      .addToUi();
+}
+
+function openSymbols() {
+  var html = HtmlService.createHtmlOutputFromFile('Symbols').setWidth(200).setTitle("Tags & Symbols");
+  SpreadsheetApp.getUi() // Or DocumentApp or SlidesApp or FormApp.
+      .showSidebar(html);
+}
+
+//Document creation methods
+
+function createNew() {
+  
+  var newSheet = sheet.setActiveSheet(sheet.getSheetByName(templateName)).copyTo(sheet);
+  sheet.setActiveSheet(newSheet);
+  
+  doc = DocumentApp.create("Untitled");
+  body = doc.getBody();
+  docID = doc.getId();
+  sheet.getRange("B2").setValue(docID);
+  
+  //Create Open link
+  
+  var openLink = '=HYPERLINK("https://docs.google.com/document/d/' + docID + '/","Open Document")';
+  sheet.getRange("C2").setValue(openLink);
+    
+}
+
+
+//Content generation methods
+
+function addElement(element) {
+  
+  if(element != "") {
+    
+    var newElement;
+    
+    if(element.search(listItemChecker[0]) >= 0) {
+      element = removeSymbol(element, listItemChecker[0]); newElement = body.appendListItem(element).setGlyphType(DocumentApp.GlyphType.BULLET).setNestingLevel(0); }
+    else if(element.search(listItemChecker[1]) >= 0) {
+      element = removeSymbol(element, listItemChecker[1]); newElement = body.appendListItem(element).setGlyphType(DocumentApp.GlyphType.HOLLOW_BULLET).setNestingLevel(1); }
+    else if(element.search(listItemChecker[2]) >= 0) {
+      element = removeSymbol(element, listItemChecker[2]); newElement = body.appendListItem(element).setGlyphType(DocumentApp.GlyphType.HOLLOW_BULLET).setNestingLevel(2); }
+    else if(element.search(listItemChecker[3]) >= 0) {
+      element = removeSymbol(element, listItemChecker[3]); newElement = body.appendListItem(element).setGlyphType(DocumentApp.GlyphType.HOLLOW_BULLET).setNestingLevel(3); }
+    else if(element.search(listItemChecker[4]) >= 0) {
+      element = removeSymbol(element, listItemChecker[4]); newElement = body.appendListItem(element).setGlyphType(DocumentApp.GlyphType.HOLLOW_BULLET).setNestingLevel(4); }
+    else if(element.search(listItemChecker[5]) >= 0) {
+      element = removeSymbol(element, listItemChecker[5]); newElement = body.appendListItem(element).setGlyphType(DocumentApp.GlyphType.HOLLOW_BULLET).setNestingLevel(5); }
+    else if(element.search(headerChecker[0]) >= 0) {
+      element = removeSymbol(element, headerChecker[0]); newElement = body.appendParagraph(element).setHeading(DocumentApp.ParagraphHeading.HEADING1); }
+    else if(element.search(headerChecker[1]) >= 0) {
+      element = removeSymbol(element, headerChecker[1]); newElement = body.appendParagraph(element).setHeading(DocumentApp.ParagraphHeading.HEADING2); }
+    else if(element.search(headerChecker[2]) >= 0) {
+      element = removeSymbol(element, headerChecker[2]); newElement = body.appendParagraph(element).setHeading(DocumentApp.ParagraphHeading.HEADING3); }
+    else if(element.search(headerChecker[3]) >= 0) {
+      element = removeSymbol(element, headerChecker[3]); newElement = body.appendParagraph(element).setHeading(DocumentApp.ParagraphHeading.HEADING4); }
+    else if(element.search(headerChecker[4]) >= 0) {
+      element = removeSymbol(element, headerChecker[4]); newElement = body.appendParagraph(element).setHeading(DocumentApp.ParagraphHeading.HEADING5); }
+    else if(element.search(headerChecker[5]) >= 0) {
+      element = removeSymbol(element, headerChecker[5]); newElement = body.appendParagraph(element).setHeading(DocumentApp.ParagraphHeading.HEADING6); }
+    else if(element.search(commentChecker) >= 0) {
+      //Do nothing for comments 
+    }
+    else {
+      newElement = body.appendParagraph(element).setHeading(DocumentApp.ParagraphHeading.NORMAL); }
+    
+    if(element.search(urlChecker) >=0 && element.search(commentChecker) < 0)
+      newElement.setLinkUrl(element);
+      
+  }
+}
+
+
+function updateDocument() {
+  
+  renameDocument(docType + " - " + docTitle);
+  
+  clearDocument();
+  
+  if(docID != "") {
+  
+    sortData(); //Upload spreadsheet content
+    
+    body.appendParagraph(docType + " - " + docTitle).setHeading(DocumentApp.ParagraphHeading.TITLE);
+    
+    body.removeChild(body.getChild(0)); //Remove extra space at top
+    
+    for(i=0;i<documentList.length;i++) //Add dynamic content
+      addElement(documentList[i][0]);
+    
+    
+    //List Item Styling && ToC
+    for(z=0;z < body.getNumChildren();z++) {
+      
+      reviewElement = body.getChild(z);
+      if(reviewElement.getType() == DocumentApp.ElementType.LIST_ITEM) {
+        var reviewList = reviewElement.asListItem();
+        
+        if(reviewList.getNestingLevel() == 0)
+          reviewList.setGlyphType(DocumentApp.GlyphType.BULLET);
+        else
+          reviewList.setGlyphType(DocumentApp.GlyphType.HOLLOW_BULLET);
+        
+      }
+      else if(reviewElement.getType() == DocumentApp.ElementType.PARAGRAPH) {
+        var reviewItem = reviewElement.asParagraph();
+        
+        if(reviewItem.getText().search(docTitlePlaceholder) >= 0)
+          reviewElement.asParagraph().editAsText().replaceText(reviewItem.getText().match(docTitlePlaceholder)[0], docTitle.toLowerCase());
+        else if(reviewItem.getText().search(productMatrixPlaceholder) >= 0)
+          createProductMatrix(body.getChildIndex(reviewElement));
+        else if(reviewItem.getText().search(productListPlaceholder) >= 0)
+          createProductList(body.getChildIndex(reviewElement));
+        
+      }
+      
+      
+    }
+    
+  }
+  
+}
+
+
+function clearDocument() {
+  
+  if(docID != "") {
+    body.appendParagraph('');
+  
+    body.clear();
+  }
+  
+}
+
+function renameDocument(documentTitle) {
+  
+  if(docID != "")
+    doc.setName(documentTitle);
+  
+  sheet.getActiveSheet().setName(documentTitle);
+  
+}
+
+function removeDocument() {
+  
+  if(docID != "") {
+    var file = DriveApp.getFileById(docID);
+    file.setTrashed(true);
+  }
+  
+  if(sheet.getActiveSheet().getName() != templateName) //Protect template sheet
+    sheet.deleteActiveSheet();
+  
+}
+
+
+function sortData() {
+  
+  var lastRow = sheet.getLastRow();
+  var lastColumn = sheet.getLastColumn();
+  
+  var activeSheet = sheet.getActiveSheet();
+  
+  for(i=1; i<=(lastColumn-mainAreaStart+1); i++) {
+    
+    mainAreaList[i - 1] = activeSheet.getRange(1, (i + mainAreaStart -1), lastRow, (lastColumn - mainAreaStart +1)).getValues();
+    
+  }
+  
+  for(i=0;i<mainAreaList.length;i++)
+    for(j=0;j<mainAreaList[i].length;j++)
+      if(mainAreaList[i][j] != "")
+        documentList.push(mainAreaList[i][j]);
+  
+  
+  return documentList[0];
+}
+
+function removeSymbol(text, symbol) {
+  
+  var newText = text.split(symbol);
+  
+  newText = newText[1];
+  
+  return newText;
+}
+
+
+function createProductList(childIndex) {
+  
+  body.removeChild(body.getChild(childIndex));
+  
+  productList = sheet.getRange(productListRange[0] + ":" + productListRange[1]).getValues();
+  
+  for(i=0;i<productList.length;i++) {
+    
+    var productLabel;
+    
+    if(productList[i][0] != "")
+      productLabel = productList[i][0] + ": ";
+    else
+      productLabel = "";
+    
+    if(productList[i][1] != "")
+      body.insertListItem(childIndex + i, productLabel + productList[i][1]).setLinkUrl(productList[i][2]);
+  }
+  
+}
+
+function createProductMatrix(childIndex) {
+  
+  body.removeChild(body.getChild(childIndex));
+  
+  productList = sheet.getRange(productListRange[0] + ":" + productListRange[1]).getValues();
+  
+  var productTable = body.insertTable(childIndex);
+  
+  var productHeader = productTable.appendTableRow();
+  var productOverview = productTable.appendTableRow();
+  var productPros = productTable.appendTableRow();
+  var productCons = productTable.appendTableRow();
+  
+  productHeader.appendTableCell("Products");
+  productOverview.appendTableCell("Overview");
+  productPros.appendTableCell("Pros");
+  productCons.appendTableCell("Cons");
+  
+  for(i=0;i<productList.length;i++)
+    if(productList[i][1] != "") {
+      productHeader.appendTableCell(productList[i][1]).setLinkUrl(productList[i][2]);
+      productOverview.appendTableCell("");
+      productPros.appendTableCell("");
+      productCons.appendTableCell("");
+    }
+  
+}
+
+function formatURL() {
+  
+  for(counter = 4; counter <=49; counter ++) {
+    
+    var urlCellFirst = sheet.getRange("B" + counter).getValue();
+    
+    if (urlCellFirst.indexOf("amazon") >= 0) {
+      urlCellFirst = urlCellFirst.split("/ref");
+      urlCellFirst = urlCellFirst[0] + fgTag;
+      sheet.getRange("C" + counter).setValue(urlCellFirst);
+    }
+    else if (urlCellFirst.indexOf("walmart") >= 0) {
+      urlCellFirst = urlCellFirst.split("?");
+      sheet.getRange("C" + counter).setValue(urlCellFirst[0]);
+    }  
+  }
+  
+}
