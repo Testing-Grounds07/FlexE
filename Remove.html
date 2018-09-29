@@ -1,0 +1,43 @@
+<html>
+  <head>
+    <base target="_top">
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  </head>
+  <body>
+    <table style="width:100%">
+      <tr>
+        <td>Document</td> 
+        <td><select id="document">
+          <option value="doNothing">Do Nothing</option>
+          <option value="delete">Delete</option>
+        </select></td>
+      </tr>
+      <tr>
+        <td>Spreadsheet</td>
+        <td><select id="spreadsheet">
+          <option value="doNothing">Do Nothing</option>
+          <option value="archive">Archive</option>
+          <option value="delete">Delete</option>
+        </select></td>
+      </tr>
+      <tr>  
+        <td></td>
+        <td><input type="submit" value="Submit" class="action" onclick="form_data()" ></td>
+      </tr>
+ 
+    </table>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">
+    </script>
+    <script>
+      function form_data(){
+        var values = new Array($("#document").val(), $("#spreadsheet").val());
+        
+        google.script.run.withSuccessHandler(closeIt).removeController(values);
+      };
+      function closeIt(){
+        google.script.host.close()
+      };
+      
+    </script>
+  </body>
+</html>
