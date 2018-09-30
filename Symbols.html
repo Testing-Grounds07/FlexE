@@ -1,23 +1,75 @@
-<!DOCTYPE html>
 <html>
   <head>
     <base target="_top">
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
   </head>
   <body>
-    <div>Typical style tags and placeholder symbols you can use to format the look of the final document include:</div>
-    <div>
+  <style type="text/css">
+  .tg  {border-collapse:collapse;border-spacing:0}
+  .tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black}
+  .tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+  .tg .tg-nb2d{font-size:100%;text-align:center;vertical-align:top}
+  .tg .tg-baqh{text-align:center;vertical-align:top}
+  .tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+  h4{padding-left: 5px}
+  tr:last-child > td, tr:last-child > th{border-bottom:1px}
+  </style>
+  <div>Typical style tags and placeholder symbols you can use to format the look of the final document include:</div>
+  <div>
     <h4>Style Tags</h4>
-    <ul>
-    <li>Headers | $...$$$$$$ - Formats the content with a header style between 1 and 6. For example: "$$ Title" adds a header 2 style.</li>
-    <li>List Items | @...@@@@@@ - Formats the content into a list and specifies the indention up to level six. For example: "@@@ Item" adds a list item with three indentions.</li>
-    <li>Comments | // - Excludes the content from the document. Useful for spreadsheet comments and directions. For example: "// This is a comment" will not appear in the document.</li>
-    </ul>
+  </div>
+  <table class="tg" style="width:100%">
+    <colgroup>
+      <col style="width: 50%">
+      <col style="width: 50%">
+    </colgroup>
+    <tr>
+      <th class="tg-c3ow"><span style="font-weight:bold">Headers</span><br><br>$...$$$$$$<br><br>Formats the content with a header style between 1 and 6.<br></th>
+      <th class="tg-baqh"><span style="font-style:italic">$$$$ Title</span><br><h4>Title</h4></th>
+    </tr>
+    <tr>
+      <td class="tg-baqh"><span style="font-weight:bold">List Items</span><br><br>@...@@@@@@<br><br>Formats the content into a list and specifies the indention up to level six.<br></td>
+      <td class="tg-baqh"><span style="font-style:italic">@ Item</span><br><br><li>Item</li></td>
+    </tr>
+    <tr>
+      <td class="tg-baqh"><span style="font-weight:bold">Comments</span><br><br>//<br><br>Excludes the content from the document. Useful for spreadsheet comments and directions.<br></td>
+      <td class="tg-baqh"><span style="font-style:italic">// This is a comment</span><br><br>Does not appear in the final document.</td>
+    </tr>
+    <tr>
+      <td class="tg-baqh"><span style="font-weight:bold">Bold</span><br><br>[b]text[/b]<br><br>Formats the wrapped text with a bold style.<br></td>
+      <td class="tg-baqh"><span style="font-style:italic">[b]Sample Text[/b]</span><br><br><b>Sample Text</b></td>
+    </tr>
+    <tr>
+      <td class="tg-baqh"><span style="font-weight:bold">Italic</span><br><br>[i]text[/i]<br><br>Formats the wrapped text with an italic style.<br></td>
+      <td class="tg-baqh"><span style="font-style:italic">[i]Sample Text[/i]</span><br><br><i>Sample Text</i></td>
+    </tr>
+    <tr>
+      <td class="tg-baqh"><span style="font-weight:bold">Underline</span><br><br>[u]text[/u]<br><br>Formats the wrapped text with an underlined style.<br></td>
+      <td class="tg-baqh"><span style="font-style:italic">[u]Sample Text[/u]</span><br><br><u>Sample Text</u></td>
+    </tr>
+    <tr></tr>
+  </table>
+  <div>
     <h4>Placeholder Symbols</h4>
-    <ul>
-    <li>Document Title | !x! - Adds the title of the document anywhere the symbol appears (lowercase only).</li>
-    <li>Product Matrix | !ProductMatrix! - Adds a full product matrix anywhere the symbol appears.</li>
-    <li>Product List | !ProductList! - Adds a full product list anywhere the symbol appears.</li>
-    </ul>
-    </div>
+  </div>
+  <table class="tg" style="width:100%">
+    <colgroup>
+      <col style="width: 50%">
+      <col style="width: 50%">
+    </colgroup>
+    <tr>
+      <th class="tg-c3ow"><span style="font-weight:bold">Document Title</span><br><br>!x!<br><br><br>Adds the title of the document anywhere the symbol appears (lowercase only).<br></th>
+      <th class="tg-baqh"><span style="font-style:italic">!x!</span><br><br>document title</th>
+    </tr>
+    <tr>
+      <td class="tg-baqh"><span style="font-weight:bold">Product Matrix</span><br><br>!ProductMatrix!<br><br>Adds a full product matrix anywhere the symbol appears.<br></td>
+      <td class="tg-baqh"><span style="font-style:italic">!ProductMatrix!</span><br><table style="width:100%"><tr><td>Product 1</td></tr><tr><td>Product 2</td></tr><tr></tr></table><br></td>
+    </tr>
+    <tr>
+      <td class="tg-baqh"><span style="font-weight:bold">Product List</span><br><br>!ProductList!<br><br>Adds a full product list anywhere the symbol appears.<br></td>
+      <td class="tg-baqh"><span style="font-style:italic">!ProductList!</span><br><br><li>Product 1</li><li>Product 2</li></td>
+    </tr>
+    <tr></tr>
+  </table>
   </body>
 </html>
