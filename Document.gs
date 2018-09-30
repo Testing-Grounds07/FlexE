@@ -69,7 +69,7 @@ function newDocument() {
   body = doc.getBody();
   docID = doc.getId();
   docPermission = DriveApp.getFileById(docID);
-  docPermission.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.COMMENT);
+  docPermission.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.EDIT);
   sheet.getRange(docIDCell).setValue(docID);
   
   //Create Open link
