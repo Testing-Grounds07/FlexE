@@ -128,6 +128,8 @@ function updateDocument() {
           createProductMatrix(body.getChildIndex(reviewElement));
         else if(reviewItem.getText().search(productListPlaceholder) >= 0)
           createProductList(body.getChildIndex(reviewElement));
+        else if(reviewItem.getText().search(linePlaceholder) >= 0)
+          reviewElement.asParagraph().clear();
         
         checkIntext(z);
       }
