@@ -17,7 +17,7 @@ var underlineChecker = /\[u\]\S.+?\[\/u\]/gm
 var docTitlePlaceholder = /![xX]!/; //X with any lower or upper caps
 var productMatrixPlaceholder = /![pP][rR][oO][dD][uU][cC][tT][mM][aA][tT][rR][iI][xX]!/; //ProductMatrix with any lower or upper caps
 var productListPlaceholder = /![pP][rR][oO][dD][uU][cC][tT][lL][iI][sS][tT]!/; //ProductMatrix with any lower or upper caps
-
+var linePlaceholder = /![lL][iI][nN][eE]!/;
 
 //Content generation methods
 
