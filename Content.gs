@@ -100,19 +100,6 @@ function removeCell(cellTarget) {
   
 }
 
-function resetProductDescription() {
-  
-  for(i=9;i<=185;i+=6) {
-    
-    removeCell("D" + i);
-    
-    if(i==63 || i == 124)
-      i++;
-    
-  }
-  
-}
-
 
 function sortData() {
   
@@ -452,4 +439,10 @@ function styleLink() {
 
 function cleanStyle() {
   scrubTags();
+}
+
+function tempUpdate() {
+  
+  updateDocument();
+  
 }
