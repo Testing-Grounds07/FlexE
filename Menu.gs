@@ -8,8 +8,6 @@ function createInterface() {
       .addSeparator()
       .addItem('Remove', 'showRemovePrompt')
       .addSeparator()
-      .addItem('Clear Products', 'resetProductDescription')
-      .addSeparator()
       .addItem('Help', 'openSymbols')
       .addToUi();
   
