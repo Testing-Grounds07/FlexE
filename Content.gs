@@ -6,18 +6,47 @@ var lineBreak = "\n";
 // Symbol Checkers
 
 var listItemChecker = new Array(/^@{1}\s/, /^@{2}\s/, /^@{3}\s/, /^@{4}\s/, /^@{5}\s/, /^@{6}\s/); //Headers from 1-6
-var headerChecker = new Array(/^\${1}\s/, /^\${2}\s/, /^\${3}\s/, /^\${4}\s/, /^\${5}\s/, /^\${6}\s/); //List items from 1-6
+var listItemAllChecker = /^@+?\s/gm;
+var headerChecker = new Array(/^\${1}\s/, /^\${2}\s/, /^\${3}\s/, /^\${4}\s/, /^\${5}\s/, /^\${6}\s/, /^!\${1}\s/); //List items from 1-6
+var headerAllChecker = /^\$+?\s/gm;
 var urlChecker = /w{3}|http/; //Searches for either www or http
 var commentChecker = /\/{2}\s/;
+var tagChecker = /(@|\$|\!\$|\/)+?\s/gm;
 
 var boldChecker = /\[b\]\S.+?\[\/b\]/gm;
 var italicChecker = /\[i\]\S.+?\[\/i\]/gm;
-var underlineChecker = /\[u\]\S.+?\[\/u\]/gm
+var underlineChecker = /\[u\]\S.+?\[\/u\]/gm;
+var linkChecker = /\[l=\S+?\]\S.+?\[\/l\]/gm;
+var imgChecker = /\[img\]\S+?\[\/img\]/gm;
+var bracketChecker = new Array(/\[\S+?\]/gm, /\[\/\S+?\]/gm);
+
+var formatingChecker = /\#\S.+?\#/gm;
+
+var linkURL = /\[l=\S.+?\]/gm;
 
 var docTitlePlaceholder = /![xX]!/; //X with any lower or upper caps
 var productMatrixPlaceholder = /![pP][rR][oO][dD][uU][cC][tT][mM][aA][tT][rR][iI][xX]!/; //ProductMatrix with any lower or upper caps
 var productListPlaceholder = /![pP][rR][oO][dD][uU][cC][tT][lL][iI][sS][tT]!/; //ProductMatrix with any lower or upper caps
 var linePlaceholder = /![lL][iI][nN][eE]!/;
+
+// Formating Tags
+var listItemTag = [["@ ",""], ["@@ ",""], ["@@@ ",""], ["@@@@ ",""], ["@@@@@ ",""], ["@@@@@@ ",""]];
+
+var headerTag  = [["$ ",""], ["$$ ",""], ["$$$ ",""], ["$$$$ ",""], ["$$$$$ ",""], ["$$$$$$ ",""], ["!$ ",""]];
+
+var anyStyleTags = /(@|\$|\!\$)+?(\s|\S)+/gm;
+
+var commentTag = ["// ",""];
+var boldTags  = ["[b]","[/b]"];
+var italicTags = ["[i]","[/i]"];
+var underlineTags = ["[u]","[/u]"];
+var imgTags = ["[img]","[/img]"];
+var linkTags = ["[l=]","[/l]"];
+
+var anyBracketTags = new Array(/\[\S+?\]/, /\[\/\S+?\]/);
+
+var formatTag = /\#/gm;
+
 
 //Content generation methods
 
@@ -51,16 +80,37 @@ function addElement(element) {
       element = removeSymbol(element, headerChecker[4]); newElement = body.appendParagraph(element).setHeading(DocumentApp.ParagraphHeading.HEADING5); }
     else if(element.search(headerChecker[5]) >= 0) {
       element = removeSymbol(element, headerChecker[5]); newElement = body.appendParagraph(element).setHeading(DocumentApp.ParagraphHeading.HEADING6); }
+    else if(element.search(headerChecker[6]) >= 0) {
+      element = removeSymbol(element, headerChecker[6]); newElement = body.appendParagraph(element).setHeading(DocumentApp.ParagraphHeading.TITLE); }
     else if(element.search(commentChecker) >= 0) {
       //Do nothing for comments 
     }
     else {
       newElement = body.appendParagraph(element).setHeading(DocumentApp.ParagraphHeading.NORMAL); }
     
-    if(element.search(urlChecker) >=0 && element.search(commentChecker) < 0)
+    if(element.search(urlChecker) >=0 && element.search(commentChecker) < 0 && element.search(linkChecker) < 0 && element.search(imgChecker) < 0)
       newElement.setLinkUrl(element);
       
   }
+}
+
+function removeCell(cellTarget) {
+  
+  sheet.getRange(cellTarget).setValue("");
+  
+}
+
+function resetProductDescription() {
+  
+  for(i=9;i<=185;i+=6) {
+    
+    removeCell("D" + i);
+    
+    if(i==63 || i == 124)
+      i++;
+    
+  }
+  
 }
 
 
@@ -170,10 +220,10 @@ function formatURL() {
 
 function checkIntext(textPos) {
   
-  var bodyText = body.getChild(textPos).asText();
+  var bodyText = body.getChild(textPos);
   
   var results = new Array(); 
-  
+  var test = bodyText.getText();
   results = bodyText.getText().match(boldChecker);
   formatIntext(bodyText, results, "bold");
   
@@ -182,6 +232,15 @@ function checkIntext(textPos) {
   
   results = bodyText.getText().match(underlineChecker);
   formatIntext(bodyText, results, "underline");
+  
+  results = bodyText.getText().match(linkChecker);
+  formatIntext(bodyText, results, "link");
+  
+  results = bodyText.getText().match(imgChecker);
+  formatIntext(bodyText, results, "image");
+  
+  results = bodyText.getText().match(formatingChecker);
+  formatIntext(bodyText, results, "format");
   
 }
 
@@ -198,18 +257,199 @@ function formatIntext(bodyText, results, style) {
       var tag1Start = start;
       var tag1End = start + 2;
       
-      var tag2Start = end - 3 - 3;
-      var tag2End = end - 3;
+      var tag2Start = end - 3;
+      var tag2End = end ;
       
       if(style == "bold")
-        bodyText.setBold(start, end, true);
+        bodyText.asText().setBold(start, end, true);
       else if(style == "italic")
-        bodyText.setItalic(start, end, true);
+        bodyText.asText().setItalic(start, end, true);
       else if(style == "underline")
-        bodyText.setUnderline(start, end, true);
+        bodyText.asText().setUnderline(start, end, true);
+      else if(style == "link") {
+       
+        var linkString = bodyText.asText().getText().match(linkURL);
+        linkString = linkString[0].substr(3);
+        linkString = linkString.slice(0, -1);
+        
+        bodyText.asText().setLinkUrl(start, end, linkString);
+        
+        tag1End = tag1End + linkString.length + 1;
+        
+      }
+      else if(style == "image") {
+        
+        var imgURL = bodyText.asText().getText().match(imgChecker);
+        
+        imgURL = imgURL[0].substr(5);
+        imgURL = imgURL.slice(0, -6);
+        
+        var resp = UrlFetchApp.fetch(imgURL);
+        var image = resp.getBlob();
+        
+        bodyText.clear();
+        bodyText.appendInlineImage(image);
+        
+        tag1End += 2;
+        tag2Start -= 2;
+        
+      }
+      else if(style == "format") {
+        
+        tag1End -= 2;
+        tag2Start += 3;
+        
+      }
       
-      bodyText.deleteText(tag1Start, tag1End);
-      bodyText.deleteText(tag2Start, tag2End);
+      if(style != "image") {
+        bodyText.asText().deleteText(tag2Start, tag2End);
+        bodyText.asText().deleteText(tag1Start, tag1End);
+      }
     }
   }
+}
+
+function addTags(contentTags) {
+  
+  var sel = SpreadsheetApp.getActive().getSelection().getActiveRangeList().getRanges();
+  for(var i = 0; i < sel.length; i++) {
+    
+    var selValues = sel[i].getValues();
+      
+    for( var j = 0; j < selValues[0].length; j++) {
+      if(selValues[0][j].toString().search(formatingChecker) < 0) {
+        selValues[0][j] = contentTags[0] + selValues[0][j] + contentTags[1];
+      }
+      else if(contentTags[0].search(listItemAllChecker) < 0 && contentTags[0].search(headerAllChecker) < 0 && contentTags[0].search(commentChecker) < 0) {
+        
+        var portions = selValues[0][j].match(formatingChecker);
+        
+        for(l=0; l<portions.length; l++) {
+          var oldPortion = portions[l];
+          portions[l] = portions[l].split(formatTag);
+          
+          portions[l][0] = contentTags[0];
+          portions[l][2] = contentTags[1];
+          
+          portions[l] = portions[l][0] + portions[l][1] + portions[l][2];
+          
+          selValues[0][j] = selValues[0][j].replace(oldPortion, portions[l]);
+        }
+      }
+      else
+        selValues[0][j] = contentTags[0] + selValues[0][j] + contentTags[1];
+    }
+    
+    sel[i].setValues(selValues);
+    
+  }
+  
+}
+
+
+function scrubTags() {
+  
+  var sel = SpreadsheetApp.getActive().getSelection().getActiveRangeList().getRanges();
+  for(var i = 0; i < sel.length; i++) {
+    
+    var selValues = sel[i].getValues();
+      
+    for( var j = 0; j < selValues[0].length; j++) {
+      
+      selValues[0][j] = selValues[0][j].replace(tagChecker, "");
+      selValues[0][j] = selValues[0][j].replace(bracketChecker[0], "");
+      selValues[0][j] = selValues[0][j].replace(bracketChecker[1], "");
+      selValues[0][j] = selValues[0][j].replace(formatTag, "");
+      
+    }
+      
+    sel[i].setValues(selValues);
+    
+  }
+  
+}
+
+// Content Style Commands
+
+function styleListItem1() {
+  addTags(listItemTag[0]);
+}
+
+function styleListItem2() {
+  addTags(listItemTag[1]);
+}
+
+function styleListItem3() {
+  addTags(listItemTag[2]);
+}
+
+function styleListItem4() {
+  addTags(listItemTag[3]);
+}
+
+function styleListItem5() {
+  addTags(listItemTag[4]);
+}
+
+function styleListItem6() {
+  addTags(listItemTag[5]);
+}
+
+
+function styleHeader1() {
+  addTags(headerTag[0]);
+}
+
+function styleHeader2() {
+  addTags(headerTag[1]);
+}
+
+function styleHeader3() {
+  addTags(headerTag[2]);
+}
+
+function styleHeader4() {
+  addTags(headerTag[3]);
+}
+
+function styleHeader5() {
+  addTags(headerTag[4]);
+}
+
+function styleHeader6() {
+  addTags(headerTag[5]);
+}
+
+function styleHeaderTitle() {
+  addTags(headerTag[6]);
+}
+
+
+function styleComment() {
+  addTags(commentTag);
+}
+
+function styleBold() {
+  addTags(boldTags);
+}
+
+function styleItalic() {
+  addTags(italicTags);
+}
+
+function styleUnderline() {
+  addTags(underlineTags);
+}
+
+function styleImage() {
+  addTags(imgTags);
+}
+
+function styleLink() {
+  addTags(linkTags);
+}
+
+
+function cleanStyle() {
+  scrubTags();
 }
