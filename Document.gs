@@ -97,7 +97,7 @@ function updateDocument() {
     
     sortData(); //Upload spreadsheet content
     
-    body.appendParagraph(docType + " - " + docTitle).setHeading(DocumentApp.ParagraphHeading.TITLE);
+    body.appendParagraph("");
     
     body.removeChild(body.getChild(0)); //Remove extra space at top
     
@@ -130,12 +130,17 @@ function updateDocument() {
           createProductList(body.getChildIndex(reviewElement));
         else if(reviewItem.getText().search(linePlaceholder) >= 0)
           reviewElement.asParagraph().clear();
+        else if(reviewItem.getText().search(breakPlaceholder) >= 0) {
+          reviewElement.asParagraph().clear(); reviewElement.asParagraph().insertPageBreak(0);
+        }
         
         checkIntext(z);
       }
       
       
     }
+    
+    body.removeChild(body.getChild(0)); //Remove extra space at top
   }
   
 }
