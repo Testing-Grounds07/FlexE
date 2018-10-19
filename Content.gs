@@ -28,13 +28,14 @@ var docTitlePlaceholder = /![xX]!/; //X with any lower or upper caps
 var productMatrixPlaceholder = /![pP][rR][oO][dD][uU][cC][tT][mM][aA][tT][rR][iI][xX]!/; //ProductMatrix with any lower or upper caps
 var productListPlaceholder = /![pP][rR][oO][dD][uU][cC][tT][lL][iI][sS][tT]!/; //ProductMatrix with any lower or upper caps
 var linePlaceholder = /![lL][iI][nN][eE]!/;
+var breakPlaceholder = /![bB][rR][eE][aA][kK]!/;
 
 // Formating Tags
 var listItemTag = [["@ ",""], ["@@ ",""], ["@@@ ",""], ["@@@@ ",""], ["@@@@@ ",""], ["@@@@@@ ",""]];
 
 var headerTag  = [["$ ",""], ["$$ ",""], ["$$$ ",""], ["$$$$ ",""], ["$$$$$ ",""], ["$$$$$$ ",""], ["!$ ",""]];
 
-var anyStyleTags = /(@|\$|\!\$)+?(\s|\S)+/gm;
+var anyStyleTags = /(@+?|\$+?|\!\$|\/\/)\s/gm;
 
 var commentTag = ["// ",""];
 var boldTags  = ["[b]","[/b]"];
@@ -296,62 +297,97 @@ function formatIntext(bodyText, results, style) {
   }
 }
 
+function reformatTag(targetTag, contentTags) {
+
+  if(contentTags.length > 0) {
+    if(targetTag.search(formatingChecker) < 0) {
+      if(Array.isArray(targetTag.match(anyStyleTags))) {
+        
+        var headTag = targetTag.match(anyStyleTags);
+        targetTag = targetTag.replace(headTag[0], "");
+        targetTag = headTag[0] + contentTags[0] + targetTag + contentTags[1];
+        
+      }
+      else
+        targetTag = contentTags[0] + targetTag + contentTags[1];
+    }
+    else {
+      
+      var portions = targetTag.match(formatingChecker);
+      
+      for(l=0; l<portions.length; l++) {
+        var oldPortion = portions[l]; 
+        portions[l] = portions[l].split(formatTag);
+        
+        portions[l][0] = contentTags[0];
+        portions[l][2] = contentTags[1];
+        
+        portions[l] = portions[l][0] + portions[l][1] + portions[l][2];
+        
+        targetTag = targetTag.replace(oldPortion, portions[l]);
+      }
+    }
+  }
+  else {
+    
+    targetTag = targetTag.replace(tagChecker, "");
+    targetTag = targetTag.replace(bracketChecker[0], "");
+    targetTag = targetTag.replace(bracketChecker[1], "");
+    targetTag = targetTag.replace(formatTag, "");
+    
+  }
+  
+  return targetTag;
+  
+}
+
 function addTags(contentTags) {
   
   var sel = SpreadsheetApp.getActive().getSelection().getActiveRangeList().getRanges();
-  for(var i = 0; i < sel.length; i++) {
+  
+  for(i=0; i < sel.length; i++) {
     
-    var selValues = sel[i].getValues();
+    var cellRange = sheet.getRange(sel[i].getA1Notation());
+    var rangeValues = cellRange.getValues();
+    
+    for(j=0; j < rangeValues.length; j++) {
       
-    for( var j = 0; j < selValues[0].length; j++) {
-      if(selValues[0][j].toString().search(formatingChecker) < 0) {
-        selValues[0][j] = contentTags[0] + selValues[0][j] + contentTags[1];
-      }
-      else if(contentTags[0].search(listItemAllChecker) < 0 && contentTags[0].search(headerAllChecker) < 0 && contentTags[0].search(commentChecker) < 0) {
+      for(k=0; k < rangeValues[j].length; k++) {
+        var value = rangeValues[j][k].toString();
         
-        var portions = selValues[0][j].match(formatingChecker);
+        rangeValues[j][k] = reformatTag(value, contentTags);
         
-        for(l=0; l<portions.length; l++) {
-          var oldPortion = portions[l];
-          portions[l] = portions[l].split(formatTag);
-          
-          portions[l][0] = contentTags[0];
-          portions[l][2] = contentTags[1];
-          
-          portions[l] = portions[l][0] + portions[l][1] + portions[l][2];
-          
-          selValues[0][j] = selValues[0][j].replace(oldPortion, portions[l]);
-        }
       }
-      else
-        selValues[0][j] = contentTags[0] + selValues[0][j] + contentTags[1];
+      
     }
-    
-    sel[i].setValues(selValues);
-    
+    cellRange.setValues(rangeValues);
+
   }
   
 }
 
-
 function scrubTags() {
   
+  
   var sel = SpreadsheetApp.getActive().getSelection().getActiveRangeList().getRanges();
-  for(var i = 0; i < sel.length; i++) {
+  
+  for(i=0; i < sel.length; i++) {
     
-    var selValues = sel[i].getValues();
+    var cellRange = sheet.getRange(sel[i].getA1Notation());
+    var rangeValues = cellRange.getValues();
+    
+    for(j=0; j < rangeValues.length; j++) {
       
-    for( var j = 0; j < selValues[0].length; j++) {
-      
-      selValues[0][j] = selValues[0][j].replace(tagChecker, "");
-      selValues[0][j] = selValues[0][j].replace(bracketChecker[0], "");
-      selValues[0][j] = selValues[0][j].replace(bracketChecker[1], "");
-      selValues[0][j] = selValues[0][j].replace(formatTag, "");
+      for(k=0; k < rangeValues[j].length; k++) {
+        var value = rangeValues[j][k].toString();
+        
+        rangeValues[j][k] = reformatTag(value, []); // Sends empty array to remove tags.
+        
+      }
       
     }
-      
-    sel[i].setValues(selValues);
     
+    cellRange.setValues(rangeValues);
   }
   
 }
